@@ -231,7 +231,6 @@ msgstr ""
 
 #. module: document_page_approval
 #: model:ir.model.fields,help:document_page_approval.field_document_page_history__message_has_error
-#: model:ir.model.fields,help:document_page_approval.field_document_page_history__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr ""
 
@@ -285,7 +284,7 @@ msgstr ""
 
 #. module: document_page_approval
 #: model:ir.model.fields,help:document_page_approval.field_document_page_history__message_needaction_counter
-msgid "Number of messages which requires an action"
+msgid "Number of messages requiring action"
 msgstr ""
 
 #. module: document_page_approval
@@ -307,11 +306,6 @@ msgstr "Freigabe anfordern"
 #. module: document_page_approval
 #: model:ir.model.fields,help:document_page_approval.field_document_page__approval_required
 msgid "Require approval for changes on this page or its child pages."
-msgstr ""
-
-#. module: document_page_approval
-#: model:ir.model.fields,field_description:document_page_approval.field_document_page_history__message_has_sms_error
-msgid "SMS Delivery error"
 msgstr ""
 
 #. module: document_page_approval
