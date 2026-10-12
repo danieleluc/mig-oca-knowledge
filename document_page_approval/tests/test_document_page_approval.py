@@ -5,6 +5,8 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestDocumentPageApproval(BaseCommon):
+    _test_user_groups = ("base.group_user", "document_page.group_document_manager")
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -179,7 +181,7 @@ class TestDocumentPageApproval(BaseCommon):
         )
 
         # Remove approval group from user2
-        self.user2.write({"group_ids": [(3, self.approver_gid.id)]})
+        self.user2.sudo().write({"group_ids": [(3, self.approver_gid.id)]})
         self.assertFalse(
             self.page2.with_user(self.user2).can_user_approve_this_page(self.user2)
         )
@@ -187,7 +189,7 @@ class TestDocumentPageApproval(BaseCommon):
     def test_pending_approval_detection(self):
         """Ensure the system detects pending approval changes"""
         # Reset page2 by removing previous history
-        self.history_obj.search([("page_id", "=", self.page2.id)]).unlink()
+        self.history_obj.search([("page_id", "=", self.page2.id)]).sudo().unlink()
 
         self.page2.invalidate_model()
         self.assertFalse(self.page2.has_changes_pending_approval)
@@ -282,3 +284,16 @@ class TestDocumentPageApproval(BaseCommon):
         )
         chreq2._compute_diff()
         self.assertIsNotNone(chreq2.diff)
+
+    def test_author_cannot_approve_after_an_approver_read_it(self):
+        """An approver reading a change request does not let its author approve it"""
+        author = new_test_user(
+            self.env, login="test_author", groups="document_page.group_document_editor"
+        )
+        chreq = self.history_obj.with_user(author).create(
+            {"page_id": self.page2.id, "content": "<p>Change</p>"}
+        )
+        self.assertTrue(chreq.with_user(self.user2).am_i_approver)
+        self.assertFalse(chreq.with_user(author).am_i_approver)
+        with self.assertRaises(UserError):
+            chreq.with_user(author).action_approve()

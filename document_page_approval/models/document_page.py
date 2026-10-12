@@ -88,6 +88,7 @@ class DocumentPage(models.Model):
             page.approver_group_ids = res
 
     @api.depends("is_approval_required", "approver_group_ids")
+    @api.depends_context("uid")
     def _compute_am_i_approver(self):
         """Check if the current user can approve changes to this page."""
         for rec in self:

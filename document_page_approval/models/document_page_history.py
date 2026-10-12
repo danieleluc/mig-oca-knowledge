@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -149,6 +149,7 @@ class DocumentPageHistory(models.Model):
         self.action_cancel()
         self.action_draft()
 
+    @api.depends_context("uid")
     def _compute_am_i_owner(self):
         """Check if current user is the owner"""
         for rec in self:
@@ -157,12 +158,7 @@ class DocumentPageHistory(models.Model):
     def _compute_page_url(self):
         """Compute the page url."""
         for page in self:
-            base_url = (
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("web.base.url", default="http://localhost:8069")
-            )
-
+            base_url = page.get_base_url()
             page.page_url = (
                 f"{base_url}/web#db={self.env.cr.dbname}&id={page.id}&"
                 "model=document.page.history"
