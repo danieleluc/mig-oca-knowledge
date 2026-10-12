@@ -286,3 +286,23 @@ class TestDocumentPageApproval(BaseCommon):
         )
         chreq2._compute_diff()
         self.assertIsNotNone(chreq2.diff)
+
+
+class TestApproverPerUser(BaseCommon):
+    _test_user_groups = ("base.group_user", "document_page.group_document_manager")
+
+    def test_author_cannot_approve_after_an_approver_read_it(self):
+        approver_group = self.env.ref("document_page_approval.group_document_approver_user")
+        author = new_test_user(self.env, login="author_x", groups="document_page.group_document_editor")
+        approver = new_test_user(
+            self.env, login="approver_x",
+            groups="document_page.group_document_editor,document_page_approval.group_document_approver_user")
+        category = self.env["document.page"].create(
+            {"name": "C", "type": "category", "approval_required": True, "approver_gid": approver_group.id})
+        page = self.env["document.page"].create({"name": "P", "parent_id": category.id})
+        version = self.env["document.page.history"].with_user(author).create(
+            {"page_id": page.id, "content": "<p>change</p>"})
+        self.assertTrue(version.with_user(approver).am_i_approver)
+        self.assertFalse(version.with_user(author).am_i_approver)
+        with self.assertRaises(UserError):
+            version.with_user(author).action_approve()

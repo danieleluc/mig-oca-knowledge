@@ -87,7 +87,10 @@ class DocumentPage(models.Model):
                 res = res | page.parent_id.approver_group_ids
             page.approver_group_ids = res
 
+    # depends on the user: without it the value computed for one user was reused for another in the same
+    # transaction, and an author could approve their own change after an approver had read the page.
     @api.depends("is_approval_required", "approver_group_ids")
+    @api.depends_context("uid")
     def _compute_am_i_approver(self):
         """Check if the current user can approve changes to this page."""
         for rec in self:
