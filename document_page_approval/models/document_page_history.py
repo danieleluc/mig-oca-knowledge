@@ -157,11 +157,7 @@ class DocumentPageHistory(models.Model):
     def _compute_page_url(self):
         """Compute the page url."""
         for page in self:
-            base_url = (
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("web.base.url", default="http://localhost:8069")
-            )
+            base_url = page.get_base_url()
 
             page.page_url = (
                 f"{base_url}/web#db={self.env.cr.dbname}&id={page.id}&"

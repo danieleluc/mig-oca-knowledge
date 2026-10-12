@@ -5,6 +5,9 @@ from odoo.addons.base.tests.common import BaseCommon
 
 
 class TestDocumentPageApproval(BaseCommon):
+    # Odoo 20: BaseCommon runs the tests as a test user with these groups only.
+    _test_user_groups = ("base.group_user", "document_page.group_document_manager")
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -179,7 +182,8 @@ class TestDocumentPageApproval(BaseCommon):
         )
 
         # Remove approval group from user2
-        self.user2.write({"group_ids": [(3, self.approver_gid.id)]})
+        # Odoo 20: the test user cannot edit users; this is test setup
+        self.user2.sudo().write({"group_ids": [(3, self.approver_gid.id)]})
         self.assertFalse(
             self.page2.with_user(self.user2).can_user_approve_this_page(self.user2)
         )

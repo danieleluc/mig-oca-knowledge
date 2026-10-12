@@ -3,7 +3,7 @@
 
 {
     "name": "Document Page Approval",
-    "version": "19.0.1.0.0",
+    "version": "20.0.1.0.0",
     "author": "Savoir-faire Linux, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/knowledge",
     "license": "AGPL-3",
@@ -13,6 +13,7 @@
         "data/email_template.xml",
         "views/document_page_approval.xml",
         "security/document_page_security.xml",
+        "security/ir.access.csv",
     ],
     "images": [
         "images/category.png",
