@@ -19,7 +19,20 @@ def post_init_hook(env):  # pragma: no cover
     )
 
 
+# The accesses of document_page that this module narrows to "approved or mine":
+# their values in document_page, restored at uninstall, when the state field goes.
+NARROWED_ACCESSES = {
+    "document_page.document_page_history_user": "document.page.history user",
+    "document_page.document_page_history_editor": "document.page.history editor",
+}
+
+
 def uninstall_hook(env):  # pragma: no cover
     # Remove unapproved pages
     _logger.info("Deleting unapproved Change Requests.")
     env.cr.execute("DELETE FROM document_page_history WHERE state != 'approved'")
+    _logger.info("Restoring the history accesses of document_page.")
+    for xmlid, name in NARROWED_ACCESSES.items():
+        access = env.ref(xmlid, raise_if_not_found=False)
+        if access:
+            access.write({"name": name, "domain": False})
