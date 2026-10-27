@@ -297,3 +297,37 @@ class TestDocumentPageApproval(BaseCommon):
         self.assertFalse(chreq.with_user(author).am_i_approver)
         with self.assertRaises(UserError):
             chreq.with_user(author).action_approve()
+
+    def test_change_request_visibility(self):
+        """A draft is seen by its author and the managers; a request waiting for
+        approval also by the approvers; an approved version by every reader"""
+        editor = new_test_user(
+            self.env, login="test-editor", groups="document_page.group_document_editor"
+        )
+        reader = new_test_user(
+            self.env,
+            login="test-reader",
+            groups="document_knowledge.group_document_user",
+        )
+        draft = (
+            self.history_obj.with_user(editor)
+            .create({"page_id": self.page2.id, "content": "<p>Draft</p>"})
+            .sudo()
+        )
+        self.assertEqual(draft.state, "draft")
+        pending = self.history_obj.create(
+            {"page_id": self.page2.id, "content": "<p>Pending</p>"}
+        )
+        pending.action_to_approve()
+        self.assertEqual(pending.state, "to approve")
+        approved = self.page2.history_head
+
+        def visible(user):
+            return self.history_obj.with_user(user).search(
+                [("id", "in", (draft | pending | approved).ids)]
+            )
+
+        self.assertEqual(visible(editor), draft | approved)
+        self.assertEqual(visible(reader), approved)
+        self.assertEqual(visible(self.user2), pending | approved)
+        self.assertEqual(visible(self.manager_user), draft | pending | approved)
